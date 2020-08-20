@@ -1,0 +1,946 @@
+	GET _cluster/health
+
+	GET _cat/nodes?v
+
+	GET _cat/indices?v
+
+	GET _cat/shards
+	
+	PUT /products
+	{
+	  "settings": {
+	    "number_of_shards": 1,
+	    "number_of_replicas": 1
+	  }
+	}
+	
+	POST /products/_doc
+	{
+	  "name" : "iphone",
+	  "price" : 300,
+	  "in_stock" : 10
+	}
+	
+	POST /products/_doc/100
+	{
+	  "name" : "oneplus",
+	  "price" : 300,
+	  "in_stock" : 2
+	}
+	
+	POST /products/_update/100
+	{
+	  "doc": {
+	    "in_stock" : 3
+	  }
+	}
+	
+	POST /products/_update/100
+	{
+	  "doc": {
+	    "tags" : ["electronics"]
+	  }
+	}
+	
+	
+	POST /products/_update/100
+	{
+	  "script": {
+	    "source": "ctx._source.in_stock--"
+	  }
+	}
+	
+	POST /products/_update/100
+	{
+	  "script": {
+	    "source": "ctx._source.in_stock=10"
+	  }
+	}
+	
+	POST /products/_update/100
+	{
+	  "script": {
+	    "source": "ctx._source.in_stock=params.paramName",
+	    "params": {
+	      "paramName" : 4
+	    }
+	  }
+	}
+	
+	POST /products/_update/101
+	{  
+	  "script": {
+	    "source": "ctx._source.in_stock=params.paramName",
+	    "params": {
+	      "paramName" : 4
+	    }
+	  },
+	  "upsert": {
+	    "name" : "nord",
+	    "price" : 211,
+	    "in_stock" : 2
+	  }
+	}
+	
+	
+	POST /products/_update/100?if_primary_term=1&if_seq_no=10
+	{
+	  "script": {
+	    "source": "ctx._source.in_stock=params.paramName",
+	    "params": {
+	      "paramName" : 4
+	    }
+	  }
+	}
+	
+	POST /products/_update_by_query
+	{
+	  "script": {
+	    "source": "ctx._source.in_stock++"
+	  },
+	  "query": {
+	    "match_all": {}
+	  }
+	}
+	
+	POST /products/_bulk
+	{"update" : {"_id" : 200}}
+	{"doc" : {"price" : 323}}
+	{"delete" : {"_id" : 201}}
+	
+	
+	POST /_bulk
+	{"index" : { "_index" : "products", "_id" : 200} }
+	{"name" : "Mi 10", "price" : 100, "in_stock" : 12}
+	{"create" : { "_index" : "products", "_id" : 201 }}
+	{"name" : "Mi 11", "price" : 200, "in_stock" : 10}
+	
+	POST _analyze
+	{
+	  "text": "This is stadard texts for testing",
+	  "analyzer": "english"
+	}
+	
+	POST _analyze
+	{
+	  "text": "This is stadard texts...   for testing",
+	  "char_filter": [],
+	  "tokenizer": "standard",
+	  "filter": ["lowercase"]
+	}
+	
+	PUT /reviews
+	{
+	  "mappings": {
+	    "properties": {
+	      "ratings" : {"type": "float"},
+	      "content" : {"type": "text"},
+	      "product_id" : {"type": "integer"},
+	      "author" : {
+	        "properties": {
+	          "first_name" : {"type" : "text"},
+	          "last_name" : {"type" : "text"},
+	          "email" :  {"type" : "keyword"}
+	        }
+	      }
+	    }
+	  }
+	}
+	
+	PUT /reviews/_mapping
+	{
+	  "properties" : {
+	    "created_at" : {"type" : "date"}
+	  }
+	}
+	
+	POST /_reindex
+	{
+	  "source": {
+	    "index": "reviews"
+	  },
+	  "dest": {
+	    "index": "reviews_new"
+	  }
+	}
+	
+	PUT /reviews/_mapping
+	{
+	  "properties": 
+	  {
+	    "comment" : {
+	      "type" : "alias",
+	      "path" : "content"
+	    }
+	  }
+	}
+	
+	PUT /_template/access-logs
+	{
+	  "index_patterns": ["access-logs-*"],
+	  "settings": {
+	    "index.mapping.coerce" : false
+	  },
+	  "mappings": {
+	    "properties": {
+	      "@timestamp" : {
+	        "type": "date"
+	      },
+	      "url.original" : {
+	        "type": "keyword"
+	      },
+	      "http.request.referrer" : {
+	        "type": "keyword"
+	      },
+	      "http.response.status_code": {
+	        "type": "long"
+	      }
+	    }
+	  }
+	}
+	
+	PUT /access-logs-2020-08-19
+	GET /access-logs-2020-08-19
+	
+	PUT /dynamic_example
+	{
+	  "mappings": {
+	    "dynamic" : false,
+	    "properties": {
+	      "first_name" : {"type": "text"}
+	    }
+	  }
+	}
+	
+	DELETE /dynamic_example
+	
+	PUT /dynamic_example
+	{
+	  "mappings": {
+	    "dynamic" : "strict",
+	    "properties": {
+	      "first_name" : {"type": "text"}
+	    }
+	  }
+	}
+	
+	POST /dynamic_example/_doc/1
+	{
+	  "first_name" : "harsh"
+	}
+	
+	POST /dynamic_example/_doc/1
+	{
+	  "first_name" : "harsh",
+	  "last_name" : "shah"
+	}
+	
+	PUT /analyzer_test
+	{
+	  "settings": {
+	    "analysis": {
+	      "analyzer": {
+	        "my_custom_analyzer":{
+	          "type" : "custom",
+	          "char_filter" : ["html_strip"],
+	          "tokenizer": "standard",
+	          "filter": ["lowercase", "stop"]
+	        }
+	      }
+	    }
+	  }
+	}
+	
+	POST analyzer_test/_analyze
+	{
+	  "analyzer": "my_custom_analyzer",
+	  "text": "<em> good </em> <strong>Love </Strong>"
+	}
+	
+	
+	GET /products/_doc/Qz1JBnQBmb_whDW_wmbC
+	GET /products/_doc/100
+	
+	GET /products/_doc/1/_explain
+	{
+	  "query": {
+	    "term": {
+	      "name": {
+	        "value": "lobster"
+	      }
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "term": {
+	      "name": {
+	        "value": "lobster"
+	      }
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "term": {
+	      "name": {
+	        "value": "Lobster"
+	      }
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "match": {
+	      "name": "Lobster"
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "terms": {
+	      "tags.keyword": [
+	        "Soup",
+	        "Cake"
+	      ]
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "ids": {
+	      "values": [1,2,3]
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "range": {
+	      "in_stock": {
+	        "gte": 1,
+	        "lte": 5
+	      }
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "exists": {
+	      "field": "tags"
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "prefix": {
+	      "tags.keyword": {
+	        "value": "Vege"
+	      }
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "wildcard": {
+	      "tags.keyword": {
+	        "value": "Ve*e"
+	      }
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "regexp": {
+	      "tags.keyword": "Veg[a-zA-Z]+"
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "regexp": {
+	      "name": "[0-9]+"
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "match": {
+	      "title": "pasta spaghetti"
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "match_phrase": {
+	      "name": "spaghetti"
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "multi_match": {
+	      "query": "pasta",
+	      "fields": ["name","description"]
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "bool": {
+	      "must": [
+	        {
+	          "match": {
+	            "name": "Spinach"
+	          }
+	        },
+	        {
+	          "range": {
+	            "in_stock": {
+	              "gte": 10
+	            }
+	          }
+	        }
+	      ]
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "bool": {
+	      "must": [
+	        {
+	          "match": {
+	            "name": "Spinach"
+	          }
+	        }
+	      ],
+	      "must_not": [
+	        {
+	          "match": {
+	            "name": "tuna"
+	          }
+	        }
+	      ],
+	      "filter": [
+	        {
+	          "range": {
+	            "in_stock": {
+	              "gte": 10
+	            }
+	          }
+	        }
+	      ]
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "bool": {
+	      "must": [
+	        {
+	          "match": {
+	            "name": "Spinach"
+	          }
+	        }
+	      ],
+	      "must_not": [
+	        {
+	          "match": {
+	            "name": "Crm"
+	          }
+	        }
+	      ],
+	      "should": [
+	        {
+	          "match": {
+	            "name": "Xed"
+	          }
+	        }
+	      ],
+	      "filter": [
+	        {
+	          "range": {
+	            "in_stock": {
+	              "gte": 10
+	            }
+	          }
+	        }
+	      ]
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "bool": {
+	      "must": [
+	        {
+	          "match": {
+	            "name": {
+	              "query": "Spinach",
+	              "_name" : "Spinach_Must"
+	            }
+	          }
+	        }
+	      ],
+	      "should": [
+	        {
+	          "match": {
+	            "name": {
+	              "query": "Leaf",
+	              "_name" : "Spinach_Should"
+	            }
+	            
+	          }
+	        }
+	      ]
+	      
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "match": {
+	      "name": {
+	        "query": "Spinach Leaf",
+	        "operator": "and"
+	      }
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "bool": {
+	      "must": [
+	        {
+	          "match": {
+	            "name": "Spinach"
+	          }
+	        },
+	        {
+	          "match": {
+	            "name": "Leaf"
+	          }
+	        }
+	      ]
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search?format=yaml
+	{
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	  }
+	}
+	
+	GET /products/_search?pretty
+	{
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search?pretty
+	{
+	  "_source": "name", 
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	  }
+	}
+	
+	GET /products/_search?pretty
+	{
+	  "_source": false, 
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	  }
+	}
+	
+	GET /products/_search?pretty
+	{
+	  "_source": ["name","in_stock", "sold"], 
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search?pretty
+	{
+	  "_source": {
+	    "includes": "{sold,name}"
+	    
+	  } ,
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	  }
+	}
+	
+	
+	GET /products/_search
+	{
+	  "size": 2, 
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "from": 10, 
+	  "size": 2, 
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	  }
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	    
+	  },
+	  "sort": [
+	    {
+	      "name.keyword": {
+	        "order": "asc"
+	      }
+	    }
+	  ]
+	}
+	
+	GET /products/_search
+	{
+	  "query": {
+	    "match": {
+	      "name": "pasta"
+	    }
+	    
+	  },
+	  "sort": [
+	    {
+	      "name.keyword": {
+	        "order": "asc"
+	      }
+	    },
+	    {
+	      "sold" : "asc"
+	    }
+	  ]
+	}
+	
+	----------------Aggregations ----------
+	
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "total_Sales": {
+	      "sum": {
+	        "field": "total_amount"
+	      }
+	    },
+	    "Average_amount" : {
+	      "avg": {
+	        "field": "total_amount"
+	      }
+	    },
+	    "min_sale" : {
+	      "min": {
+	        "field": "total_amount"
+	      }
+	    }
+	  }
+	}
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "distinct_salesman": {
+	      "cardinality": {
+	        "field": "salesman.id"
+	      }
+	    }
+	  }
+	}
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "count": {
+	      "value_count": {
+	        "field": "salesman.id"
+	      }
+	    }
+	  }
+	}
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "amount_stats": {
+	      "stats": {
+	        "field": "salesman.id"
+	      }
+	    }
+	  }
+	}
+	
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "status_terms": {
+	      "terms": {
+	        "field": "sales_channel.keyword",
+	        "order": {
+	          "_key": "desc"
+	        }
+	      }
+	    }
+	  }
+	}
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "status_terms": {
+	      "terms": {
+	        "field": "total_amount",
+	        "order": {
+	          "_key": "desc"
+	        }
+	      }
+	    }
+	  }
+	}
+	
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "status_terms": {
+	      "terms": {
+	        "field": "sales_channel.keyword",
+	        "order": {
+	          "_key": "desc"
+	        }
+	      },
+	      "aggs": {
+	        "stats_data": {
+	          "stats": {
+	            "field": "lines.amount"
+	          }
+	        }
+	        
+	      }
+	    }
+	  }
+	}
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "query": {
+	    "range": {
+	      "total_amount": {
+	        "gte": 100
+	      }
+	    }
+	  }, 
+	  "aggs": {
+	    "status_terms": {
+	      "terms": {
+	        "field": "sales_channel.keyword",
+	        "order": {
+	          "_key": "desc"
+	        }
+	      },
+	      "aggs": {
+	        "stats_data": {
+	          "stats": {
+	            "field": "lines.amount"
+	          }
+	        }
+	        
+	      }
+	    }
+	  }
+	}
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "low_value_filter": {
+	      "filter": {
+	        "range": {
+	          "total_amount": {
+	            "lte": 50
+	          }
+	        }
+	      },
+	      "aggs": {
+	        "avg_amount": {
+	          "avg": {
+	            "field": "total_amount"
+	          }
+	        }
+	      }
+	    }
+	  }
+	}
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "my_filter": {
+	      "range": {
+	        "field": "total_amount",
+	        "ranges": [
+	          {
+	            "to": 50
+	          },
+	          {
+	            "from": 50
+	            , "to": 100
+	          },
+	          {
+	            "from": 100
+	          }
+	        ]
+	      }
+	    }
+	  }
+	  
+	}
+	
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "my_filter_buckets": {
+	      "range": {
+	        "field": "total_amount",
+	        "keyed": true, 
+	        "ranges": [
+	          {
+	            "key": "first50", 
+	            "to": 50
+	          },
+	          {
+	            "key": "next50", 
+	            "from": 50
+	            , "to": 100
+	          },
+	          {
+	            "from": 100
+	          }
+	        ]
+	      },
+	      "aggs": {
+	        "Stats": {
+	          "stats": {
+	            "field": "total_amount"
+	          }
+	        }
+	      }
+	    }
+	  }
+	  
+	}
+	
+	
+	GET /order/_search
+	{
+	  "size": 0,
+	  "aggs": {
+	    "value_distibution": {
+	      "histogram": {
+	        "field": "total_amount",
+	        "interval": 25
+	      }
+	    }
+	  }
+	}
+	
+	
+	
+	
+	curl -H "Content-Type: application/x-ndjson" -XPOST http://localhost:9200/products/_bulk --data-binary "@products-bulk.json"
+	
